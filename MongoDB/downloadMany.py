@@ -12,7 +12,7 @@ db = client["open_data"]
 collection = db["water_locations_france"]
 
 # Read CSV using semicolon separator
-df = pd.read_csv("drinking_water_data.csv", sep=";")
+df = pd.read_csv("/Users/victorkindberg/The-Walking-Fed/data/osm_france_drinking_water/osm_france_drinking_water.csv", sep=";")
 
 # Extract latitude and longitude from OSM Point
 coordinates = df["OSM Point"].str.split(",", n=1, expand=True)
