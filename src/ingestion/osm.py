@@ -14,8 +14,15 @@ DATASET_URL = (
     "?delimiter=%3B&lang=en&timezone=Europe%2FParis&use_labels=true"
 )
 
-# Local folder and dataset file
-LOCAL_DATA_FOLDER = "data/osm_france_drinking_water"
+# Store data under the repository's data directory, independent of the task cwd.
+REPOSITORY_ROOT = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
+LOCAL_DATA_FOLDER = os.path.join(
+    REPOSITORY_ROOT,
+    "data",
+    "osm_france_drinking_water",
+)
 DATASET_FILE = os.path.join(
     LOCAL_DATA_FOLDER,
     "osm_france_drinking_water.csv"
@@ -115,7 +122,7 @@ def download_dataset(dataset_url, local_file, etag_file):
 
     except requests.exceptions.RequestException as error:
         print(f"Download failed: {error}")
-        return False
+        raise
 
 
 if DEBUG or __name__ == "__main__":
