@@ -4,7 +4,7 @@
 
 Template by [Riccardo Tommasini](riccardotommasini.com/) from [INSA Lyon](https://www.insa-lyon.fr/).
 
-Students: Simon Weber, Victor Kindberg
+Students: Simon Weber, Victor Kindberg , Younes El Majdoubi El Idrissi
 
 ### Abstract
 In the case of a zombie apocalypse, where in the world would you be most likely to survive on forageable food, drinking water and shelter alone?
