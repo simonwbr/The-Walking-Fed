@@ -1,0 +1,83 @@
+version: 2
+
+models:
+  - name: silver_water
+    description: >
+      Cleaned drinking water points in metropolitan France, from the latest downloaded file.
+      One row per OSM element.
+    columns:
+      - name: water_point_key
+        description: OSM element type and id, e.g. node/1428745388. Unique key.
+        tests:
+          - unique
+          - not_null
+      - name: access_fee
+        description: free, paid or unknown (from the OSM tag fee).
+        tests:
+          - accepted_values:
+              values: ["free", "paid", "unknown"]
+      - name: location_type
+        description: indoor, outdoor or unknown (from the OSM tag indoor).
+        tests:
+          - accepted_values:
+              values: ["indoor", "outdoor", "unknown"]
+      - name: latitude
+        description: WGS 84 latitude.
+        tests:
+          - not_null
+      - name: longitude
+        description: WGS 84 longitude.
+        tests:
+          - not_null
+      - name: geom
+        description: PostGIS point (SRID 4326).
+
+  - name: silver_communes
+    description: French communes with a valid polygon, latest reference file only.
+    columns:
+      - name: commune_code
+        data_tests: [unique, not_null]
+      - name: geom
+        data_tests: [not_null]
+
+  - name: silver_tiles
+    description: 1 km GHSL population cells located in France, with their commune.
+    columns:
+      - name: tile_id
+        description: grid_row * 1,000,000 + grid_col (neighbours are ±1 and ±1,000,000).
+        data_tests: [unique, not_null]
+      - name: population
+        data_tests: [not_null]
+      - name: commune_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_communes')
+                field: commune_code 
+                 
+  - name: silver_fruit_types
+    description: Falling Fruit types (latest file), with forager / freegan / pending flags.
+    columns:
+      - name: type_id
+        data_tests: [unique, not_null]
+
+  - name: silver_fruit
+    description: One row per Falling Fruit location x forageable type, in France.
+    columns:
+      - name: fruit_key
+        description: location_id-type_id.
+        data_tests: [unique, not_null]
+      - name: type_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('silver_fruit_types')
+                field: type_id
+      - name: tile_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_tiles')
+                field: tile_id

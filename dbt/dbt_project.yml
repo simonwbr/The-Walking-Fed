@@ -1,0 +1,33 @@
+name: walking_fed
+version: "1.0.0"
+config-version: 2
+profile: walking_fed
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  # Size of the GHSL population cells, in metres (1000 = 1 km grid)
+  cell_size: 1000
+  # Survivability score (gold.dim_tiles): weight of a resource by its quality
+  fruit_quality_weights: {"good": 1.0, "medium": 0.5, "bad": 0.1}
+  water_quality_weights: {"good": 1.0, "medium": 0.6, "bad": 0.3}
+  # Half-saturation constants: amount giving half of the maximum effect
+  food_half_saturation: 10        # weighted fruit resources in a tile for a food score of 0.5
+  water_half_saturation: 1        # weighted water points in a tile for a water score of 0.5
+  zombie_half_population: 1000    # inhabitants (future zombies) in a tile for a threat of 0.5
+
+# PostGIS is needed by the spatial models
+on-run-start:
+  - "CREATE EXTENSION IF NOT EXISTS postgis"
+
+models:
+  walking_fed:
+    silver:
+      +schema: silver
+      +materialized: table
+    gold:
+      +schema: gold
+      +materialized: table

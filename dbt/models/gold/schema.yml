@@ -1,0 +1,135 @@
+version: 2
+
+models:
+  - name: dim_source
+    description: "DIM_SOURCE - one row per data source (static, SCD type 0)."
+    columns:
+      - name: source_id
+        description: PK. Unique number for a data source.
+        data_tests: [unique, not_null]
+      - name: source_name
+        description: Name of the data source.
+        data_tests: [not_null]
+      - name: source_url
+        description: URL of the data source.
+
+  - name: dim_fruit_resource
+    description: "DIM_FRUIT_RESOURCE - one row per kind of forageable resource (Falling Fruit type), SCD type 1."
+    columns:
+      - name: fruit_resource_id
+        description: PK. Unique number for a fruit resource (Falling Fruit type id).
+        data_tests: [unique, not_null]
+      - name: category
+        description: Category of the resource (tree fruit, berry, nut, leaves and flowers, other), from the genus.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['tree fruit', 'berry', 'nut', 'leaves and flowers', 'other']
+      - name: quality
+        description: Survival value of the resource (good, medium, bad).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['good', 'medium', 'bad']
+      - name: name
+        description: Name of the resource (English name, or scientific name when missing).
+        data_tests: [not_null]
+
+  - name: dim_water_resource
+    description: "DIM_WATER_RESOURCE - one row per drinking water point, SCD type 1."
+    columns:
+      - name: water_resource_id
+        description: PK. Unique number for a water resource (OSM id x 10 + OSM type digit).
+        data_tests: [unique, not_null]
+      - name: category
+        description: Category of the resource (public, indoor or paid drinking water).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['public drinking water', 'indoor drinking water', 'paid drinking water']
+      - name: quality
+        description: "good = free, outdoors and updated on OSM in the last 5 years; medium = 2 of these; bad = 0 or 1."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['good', 'medium', 'bad']
+      - name: name
+        description: Name of the resource (OSM name, or 'Drinking water point').
+        data_tests: [not_null]
+
+  - name: dim_tiles
+    description: "DIM_TILES - one row per 1 km tile of metropolitan France, SCD type 1. Binds FACT_FRUIT and FACT_WATER."
+    columns:
+      - name: tile_id
+        description: "PK. grid_row * 1,000,000 + grid_col of the GHSL grid: neighbours are tile_id +/- 1 and +/- 1,000,000."
+        data_tests: [unique, not_null]
+      - name: latitude
+        description: Latitude of the tile's centroid.
+      - name: longitude
+        description: Longitude of the tile's centroid.
+      - name: city
+        description: Commune the tile's centroid lies in.
+        data_tests: [not_null]
+      - name: country
+        description: Country of the tile.
+      - name: population
+        description: Inhabitants in the tile (1 km2), i.e. population density per km2 (GHSL).
+        data_tests: [not_null]
+      - name: survivability_score
+        description: "0 to 100. 100 x sqrt(food score x water score) x (1 - zombie threat), see dbt_project.yml vars."
+        data_tests: [not_null]
+
+  - name: fact_fruit
+    description: "FACT_FRUIT - one row per fruit resource found in a tile (factless fact table)."
+    columns:
+      - name: tile_id
+        description: FK to dim_tiles.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_tiles')
+                field: tile_id
+      - name: fruit_resource_id
+        description: FK to dim_fruit_resource.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_fruit_resource')
+                field: fruit_resource_id
+      - name: source_id
+        description: FK to dim_source.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_source')
+                field: source_id
+
+  - name: fact_water
+    description: "FACT_WATER - one row per drinking water point in a tile (factless fact table)."
+    columns:
+      - name: tile_id
+        description: FK to dim_tiles.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_tiles')
+                field: tile_id
+      - name: water_resource_id
+        description: FK to dim_water_resource.
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_water_resource')
+                field: water_resource_id
+      - name: source_id
+        description: FK to dim_source.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_source')
+                field: source_id

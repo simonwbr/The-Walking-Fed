@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: bronze
+    schema: bronze
+    tables:
+      - name: water_points
+        description: Drinking water points from OpenStreetMap (Huwise export), as loaded from MongoDB.
+      - name: population_tiles
+        description: GHSL population grid cells (1 km, Mollweide) for the study area.
+      - name: communes
+        description: French commune boundaries (france-geojson, simplified), geometry as GeoJSON text.
+      - name: fruit_locations
+        description: Falling Fruit locations inside the study area (metropolitan France), as loaded from MongoDB.
+      - name: fruit_types
+        description: Falling Fruit types (species, genera...), the whole catalogue.
